@@ -8,7 +8,9 @@ Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells
 1.  If you don't have a user profile already, go ahead and create one by running 
     `ipython profile create`.  You can then figure out where your profile is located by running
     `ipython profile list`.  It will be listed under the *users* section.  Mine is
-    `~/.config/ipython/profile_default/`.
+    `~/.config/ipython/profile_default/`.  **Advanced users** may not want to override custom.js,
+    that's fine as long as a reference to *cell_tags* is added to the existing *custom.js*  
+        ie. `require(['custom/cell_tags']);`
 2.  Put the files in `/static/custom/` into the same subdir in your profile directory.  You may
     need to create it if it doesn't already exist.  For example, on my computer, the files
     reside in `~/.config/ipython/profile_default/static/custom/`.
