@@ -1,7 +1,7 @@
 # Notebook Cherry Picker Extension
 
 ## Description
-Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells from a notebook.
+Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells from a notebook.  
 Video demonstration of notebook GUI: http://youtu.be/wUup5I4l5nc
 
 ## Installation
