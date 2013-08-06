@@ -2,7 +2,7 @@
 
 ## Description
 Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells from a notebook.  
-Video demonstration of notebook GUI: http://youtu.be/wUup5I4l5nc
+Video demonstration of notebook GUI: http://youtu.be/iACSt4_vv9Y
 
 ## Installation
 
