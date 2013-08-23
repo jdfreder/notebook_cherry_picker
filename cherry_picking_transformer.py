@@ -4,9 +4,7 @@ from IPython.utils.traitlets import List
 
 class CherryPickingTransformer(Transformer):
 
-    match_tags = List(config=True, help="""
-        Tags of the cells that you want to export.
-        """)
+    expression = List(config=True, help="Cell tag expression.")
 
     def call(self, nb, resources):
 
@@ -14,7 +12,7 @@ class CherryPickingTransformer(Transformer):
         for worksheet in nb.worksheets:
             remove_indicies = []
             for index, cell in enumerate(worksheet.cells):
-                if not self.validate_cell_tag(cell):
+                if not self.validate_cell_tags(cell):
                     remove_indicies.append(index)
 
             for index in remove_indicies[::-1]:
@@ -24,10 +22,23 @@ class CherryPickingTransformer(Transformer):
         return nb, resources
 
 
-    def validate_cell_tag(self, cell):
-        if 'cell_tag' in cell.metadata:
-            cell_tag = cell.metadata.cell_tag
-            for match_tag in self.match_tags:
-                if match_tag.lower() == cell_tag.lower():
-                    return True
+    def vsalidate_cell_tag(self, cell):
+        if 'cell_tags' in cell.metadata:
+            return eval_tag_expression(cell.metadata.cell_tags, self.expression)
         return False
+
+
+    def eval_tag_expression(tags, expression):
+        
+        # Create the tags as True booleans.  This allows us to use python 
+        # expressions.
+        for tag in tags:
+            exec tag + " = True"
+
+        # Attempt to evaluate expression.  If a variable is undefined, define
+        # the variable as false.
+        while True:
+            try:
+                return eval(expression)
+            except NameError as Error:
+                exec str(Error).split("'")[1] + " = False"

@@ -1,185 +1,98 @@
-(function (IPython) {
-    "use strict";
 
-    // Variables //////////////////////////////////////////////////////////////
 
-    var CellToolbar = IPython.CellToolbar;
-    var CellTags = [["<None>", undefined]]
+// Variables //////////////////////////////////////////////////////////////
 
-    // Keep track of all of the tag dropdowns so we can modify their contents later.
-    var SelectControls = [];
+var CellToolbar = IPython.CellToolbar;
+var CellTags = ["exercise", "student", "instructor"]
 
-    // Init ///////////////////////////////////////////////////////////////////
+// Keep track of all of the tag dropdowns so we can modify their contents later.
+var SelectControls = [];
 
-    var init = function(){
-        init_modify_tags_modal();
-        init_cell_tags();
-        init_cell_toolbar();
-        init_tag_button();
-    };
+// Init ///////////////////////////////////////////////////////////////////
 
-    var init_modify_tags_modal = function(){
-        $("body").append(" \
-            <div class=\"modal fade\" id=\"tagsModifier\"> \
-                <div class=\"modal-dialog\"> \
-                  <div class=\"modal-content\"> \
-                    <div class=\"modal-header\"> \
-                      <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button> \
-                      <h4 class=\"modal-title\">Modify registered notebook tags</h4> \
-                    </div> \
-                    <div class=\"modal-body\"> \
-                        <div class=\"input-append\"> \
-                            Add and remove the tags registered to this notebook by modifying the contents of the drop down seen below.<br> \
-                            <select id=\"tagDeleteList\"></select> \
-                            <a href=\"#\" onclick=\"$.on_delete_tag_clicked();\" class=\"btn\">Delete</a> \
-                            <a href=\"#\" onclick=\"$.on_add_tag_clicked();\" class=\"btn\">Add</a> \
-                        </div> \
-                    </div> \
-                    <div class=\"modal-footer\"> \
-                      <a href=\"#\" class=\"btn btn-primary\" data-dismiss=\"modal\">Close</a> \
-                    </div> \
-                  </div><!-- /.modal-content --> \
-                </div><!-- /.modal-dialog --> \
-            </div><!-- /.modal -->");
-        SelectControls.push($("#tagDeleteList"));
-    };
+var init = function(){
+    init_cell_tags();
+    init_cell_toolbar();
+};
 
-    var init_cell_tags = function(){
-        if (IPython.notebook.metadata.cell_tags!=undefined){
-            CellTags = IPython.notebook.metadata.cell_tags;
-        }
-        apply_tags_list();
-    };
+var init_cell_tags = function(){
+    if (IPython.notebook.metadata.cell_tags!=undefined){
+        CellTags = IPython.notebook.metadata.cell_tags;
+    }
+};
 
-    var init_cell_toolbar = function(){
+var init_cell_toolbar = function(){
 
-        var cell_tag_init = select_ui_generator(
-            // Setter
-            function(cell, value){
-                cell.metadata.cell_tag = value;
-            },
+    // Create a checkbox for each known tag.
+    var checkbox_inits = []
+    for (var i = 0; i < CellTags.length; i++) {
+        var tag_name = CellTags[i];
+        add_checkbox(tag_name);
+        checkbox_inits.push(tag_name + '.init');    
+    }
 
-            //Getter
-            function(cell){ 
-                return cell.metadata.cell_tag;
-            },
+    CellToolbar.register_preset('Software carpentry', checkbox_inits);
+    console.log('Software carpentry extension loaded.');
+};
 
-            //Caption
-            "Tag: ");
 
-        CellToolbar.register_callback('cell_tag.init', cell_tag_init);
+var add_checkbox = function(tag_name){
 
-        var example_preset = []
-        example_preset.push('cell_tag.init');
+    var cell_tag_init = CellToolbar.utils.checkbox_ui_generator(
 
-        CellToolbar.register_preset('Cell Tags',example_preset);
-        console.log('Cell tag extension loaded.');
-    };
+        // Name
+        tag_name,
 
-    var init_tag_button = function(){
-    IPython.toolbar.add_buttons_group([
-         {
-          'label'   : 'Modify Cell Tag List',
-          'icon'    : 'icon-tag', 
-          'callback': on_tag_button_clicked
-         }
-     ]);
-    };
+        // Setter
+        function(cell, value){
+            if (value) {
 
-    // Events /////////////////////////////////////////////////////////////////
+                // If no tags property is set in the cell metadata, create the tag.
+                // Else add the tag to the list of tags.
+                if (cell.metadata.cell_tags == undefined) {
+                    cell.metadata.cell_tags = [tag_name];
+                } else {
+                    cell.metadata.cell_tags.push(tag_name)
+                };
+            } else {
 
-    $.on_add_tag_clicked = function(){
-        var tag_name = prompt('Enter the name of the tag you want to add:');
-        add_tag(tag_name);
-        $('#tagDeleteList :selected').val(tag_name);
-    };
+                // Get the indicies to remove.
+                var remove_indicies = [];
+                for (var i = 0; i < cell.metadata.cell_tags.length; i++) {
+                    if (cell.metadata.cell_tags[i]==tag_name) {
+                        remove_indicies.push(i);
+                    };
+                };
 
-    $.on_delete_tag_clicked = function(){
-        if ($('#tagDeleteList :selected').val()==undefined){
-            alert('Cannot delete built-in <None> flag.')            
-        } else {
-            if (confirm('Are you sure you want to delete this tag?')){
-                remove_tag($('#tagDeleteList :selected').val());
-            };    
-        };
-    };
+                // Remove the items
+                for (var i = 0; i < remove_indicies.length; i++) {
+                    var remove_index = remove_indicies[i] - i;
+                    cell.metadata.cell_tags.splice(remove_index, 1);
+                };
+            };
+            
+        },
 
-    var on_tag_button_clicked = function(){
-        $('#tagsModifier').modal('show');
-    };
+        // Getter
+        function(cell){ 
+            if (cell.metadata.cell_tags == undefined) {
+                cell.metadata.cell_tags = [];
+            };
 
-    // Functions //////////////////////////////////////////////////////////////
-
-    var remove_tag = function(tag){
-        if (CellTags.length>0) {
-            var remove_indicies = [];
-            for (var i = 0; i < CellTags.length; i++) {
-                if (CellTags[i][0] == tag) {
-                    remove_indicies.push(i);
+            // Check if the value is registered in the tags list.
+            var has_value = false;
+            for (var i = 0; i < cell.metadata.cell_tags.length; i++) {
+                if (cell.metadata.cell_tags[i]==tag_name) {
+                    has_value = true;
+                    break;
                 };
             };
 
-            for (var i = 0; i < remove_indicies.length; i++) {
-                CellTags.splice(remove_indicies[i] - i, 1);
-            };
-            apply_tags_list();    
-        };
-    };
+            return has_value;
+        });
 
-    var add_tag = function(tag){
-        CellTags.push([tag, tag]);
-        apply_tags_list();
-    };
+    CellToolbar.register_callback(tag_name + '.init', cell_tag_init);
 
-    var apply_tags_list = function(){
-        if (SelectControls.length>0) {
-            for (var i = 0; i < SelectControls.length; i++) {
+};
 
-                // Remember selection then remove everything from the select
-                var select_control = SelectControls[i];
-                var selection = select_control.val();
-                select_control.find('option').remove().end();
-
-                // Add the new items
-                var selection_exists = false;
-                for(var itemn in CellTags){
-                    var opt = $('<option/>');
-                        opt.attr('value', CellTags[itemn][1]);
-                        opt.text(CellTags[itemn][0]);
-                    select_control.append(opt);
-                    if (CellTags[itemn][1]==selection){
-                        selection_exists = true;
-                    }
-                };
-
-                // Try to reselect
-                if (selection_exists) {                   
-                    select_control.val(selection);
-                };
-            };
-        };
-
-        IPython.notebook.metadata.cell_tags = CellTags;
-    };
-
-    var select_ui_generator = function(setter, getter, label){
-        label= label? label: "";
-        return function(div, cell) {
-            var button_container = $(div)
-            var lbl = $("<label/>").append($('<span/>').text(label));
-
-            var select = $('<select/>').addClass('ui-widget ui-widget-content');
-            SelectControls.push(select);
-            apply_tags_list()
-
-            select.val(getter(cell));
-            select.change(function(){
-                        setter(cell, select.val());
-                    });
-            button_container.append($('<div/>').append(lbl).append(select));
-        };
-    };
-
-    init();
-
-}(IPython));
+init();
