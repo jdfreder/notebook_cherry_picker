@@ -2,8 +2,8 @@
 
 ## Description
 Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells from a notebook.  
-- **Video demonstration** of notebook GUI: http://youtu.be/iACSt4_vv9Y   
-- **Video demonstration** of cherry picking operation: http://youtu.be/7d-2IWZ_vLs
+- **Old video demonstration** of notebook GUI: http://youtu.be/iACSt4_vv9Y   
+- **Old video demonstration** of cherry picking operation: http://youtu.be/7d-2IWZ_vLs
 
 ## Installation
 
@@ -11,8 +11,7 @@ Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells
     `ipython profile create`.  You can then figure out where your profile is located by running
     `ipython profile list`.  It will be listed under the *users* section.  Mine is
     `~/.config/ipython/profile_default/`.  **Advanced users** may not want to override custom.js,
-    that's fine as long as a reference to *cell_tags* is added to the existing *custom.js*  
-        ie. `require(['custom/cell_tags']);`
+    that's fine as long as a reference to *cell_tags* is added to the existing *custom.js*
 2.  Put the files in `/static/custom/` into the same subdir in your profile directory.  You may
     need to create it if it doesn't already exist.  For example, on my computer, the files
     reside in `~/.config/ipython/profile_default/static/custom/`.
@@ -23,17 +22,17 @@ Simple Notebook &amp; nbconvert extension demonstrating how to cherry pick cells
 
 ### Part 1 - Notebook
 
-This plugin works by allowing the user to *tag* each cell in the notebook.  Tags are registered
-in the notebook metadata and can be managed via the tag button on the main toolbar.  Tags are
-specified on a cell to cell basis via the new tags cell toolbar.  The cell tag is then stored
-in the cell's metadata.
+This plugin works by allowing the user to *tag* each cell in the notebook.
+Tags are specified on a cell to cell basis via the new tags cell toolbar.  The
+information is stored in the cell metadata, and can be viewed using the Raw Edit
+button on the default toolbar.
 
 ### Part 2 - nbconvert
 
 When all of the cells are tagged as desired, one must run nbconvert with a special **writer** 
-and **transformer** (included) to cherry-pick the desired cells.
+and **preprocessor** (included) to cherry-pick the desired cells.
 
-- Make sure that the `cherry_picking_transformer.py` and `notebook_copy_writer.py` are accessible 
+- Make sure that the `cherry_picking_preprocessor.py` and `notebook_copy_writer.py` are accessible 
   via your PYTHONPATH.  The easiest way to do this is to place them in the cwd (usally the same 
   directory as the notebooks that you want to cherry pick from).
 - Make sure that the `ipython_nbconvert_config.py` file (included) is placed in the cwd.  This
@@ -43,15 +42,16 @@ and **transformer** (included) to cherry-pick the desired cells.
 Call nbconvert, specify the names of the notebooks you want to convert (glob supported) and the
 tags you want to pick out of the document.
 
-    ipython nbconvert notebook* --CherryPickingTransformer.match_tags='["tag1", "tag2"]'
+    ipython nbconvert example.ipynb --CherryPickingPreprocessor.expression='instructor or exercise'
   
 where 
-- `notebook*` would be replaced by a space separeted list of notebook names
-- `"tag1", "tag2"` would be replaced by a comma separeted list of tags (enclosed in quotes)
+- `example.ipynb` would be replaced by a space separeted list of notebook names
+- `instructor or exercise` would be replaced by the boolean expression used to
+  select cells.
 
 Example:
 
-    ipython nbconvert Untitled0 --CherryPickingTransformer.match_tags='["doc1"]'
+    ipython nbconvert notebook*.ipynb --CherryPickingPreprocessor.expression='(manager or supervisor) and secret'
     
 If you want to shorten the command, you can add the *match_tags* to the local config file.
 You can also have multiple config files, each one with separate tags.  You can then load the 
