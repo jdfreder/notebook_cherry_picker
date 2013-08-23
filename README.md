@@ -53,6 +53,6 @@ Example:
 
     ipython nbconvert notebook*.ipynb --CherryPickingPreprocessor.expression='(manager or supervisor) and secret'
     
-If you want to shorten the command, you can add the *match_tags* to the local config file.
+If you want to shorten the command, you can add the *expression* to the local config file.
 You can also have multiple config files, each one with separate tags.  You can then load the 
-config files with `--config myConfig.py` at the commandline.
+config file you want with `--config myConfig.py` at the commandline.
