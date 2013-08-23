@@ -1,10 +1,10 @@
 from copy import deepcopy
 from IPython.nbconvert.transformers import Transformer
-from IPython.utils.traitlets import List
+from IPython.utils.traitlets import Unicode
 
-class CherryPickingTransformer(Transformer):
+class CherryPickingPreprocessor(Transformer):
 
-    expression = List(config=True, help="Cell tag expression.")
+    expression = Unicode('True', config=True, help="Cell tag expression.")
 
     def call(self, nb, resources):
 
@@ -22,13 +22,12 @@ class CherryPickingTransformer(Transformer):
         return nb, resources
 
 
-    def vsalidate_cell_tag(self, cell):
-        if 'cell_tags' in cell.metadata:
-            return eval_tag_expression(cell.metadata.cell_tags, self.expression)
+    def validate_cell_tags(self, cell):
+        if 'cell_tags' in cell['metadata']:
+            return self.eval_tag_expression(cell['metadata']['cell_tags'], self.expression)
         return False
 
-
-    def eval_tag_expression(tags, expression):
+    def eval_tag_expression(self, tags, expression):
         
         # Create the tags as True booleans.  This allows us to use python 
         # expressions.
