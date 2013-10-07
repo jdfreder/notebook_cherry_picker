@@ -1,12 +1,12 @@
 from copy import deepcopy
-from IPython.nbconvert.transformers import Transformer
+from IPython.nbconvert.preprocessors import Preprocessor
 from IPython.utils.traitlets import Unicode
 
-class CherryPickingPreprocessor(Transformer):
+class CherryPickingPreprocessor(Preprocessor):
 
     expression = Unicode('True', config=True, help="Cell tag expression.")
 
-    def call(self, nb, resources):
+    def preprocess(self, nb, resources):
 
         # Loop through each cell, remove cells that dont match the query.
         for worksheet in nb.worksheets:
