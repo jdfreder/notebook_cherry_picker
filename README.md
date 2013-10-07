@@ -42,7 +42,7 @@ and **preprocessor** (included) to cherry-pick the desired cells.
 Call nbconvert, specify the names of the notebooks you want to convert (glob supported) and the
 tags you want to pick out of the document.
 
-    ipython nbconvert example.ipynb --CherryPickingPreprocessor.expression='instructor or exercise'
+    ipython nbconvert example.ipynb --CherryPickingPreprocessor.expression="instructor or exercise"
   
 where 
 - `example.ipynb` would be replaced by a space separeted list of notebook names
@@ -51,7 +51,7 @@ where
 
 Example:
 
-    ipython nbconvert notebook*.ipynb --CherryPickingPreprocessor.expression='(manager or supervisor) and secret'
+    ipython nbconvert notebook*.ipynb --CherryPickingPreprocessor.expression="(manager or supervisor) and secret"
     
 If you want to shorten the command, you can add the *expression* to the local config file.
 You can also have multiple config files, each one with separate tags.  You can then load the 
